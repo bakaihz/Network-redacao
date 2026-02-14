@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const { URL } = require('url');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -18,32 +19,37 @@ const MODEL = 'openai/gpt-oss-120b:free';
 
 // ==================== FUNÇÃO PROXY MELHORADA ====================
 async function proxyRequest(req, res, endpoint, method = req.method) {
-  const url = `${REMOTE_BASE}${endpoint}`;
-  
-  // Prepara headers, removendo os que causam conflito
-  const headers = {
-    ...req.headers,
-    host: new URL(REMOTE_BASE).host,
-  };
-  delete headers['content-length'];
-  delete headers['connection'];
-  delete headers['accept-encoding']; // evita problemas com compressão
-
-  const options = {
-    method,
-    headers,
-  };
-
-  if (method !== 'GET' && method !== 'HEAD' && req.body) {
-    options.body = JSON.stringify(req.body);
-    if (!headers['content-type']) {
-      headers['content-type'] = 'application/json';
-    }
-  }
-
-  console.log(`[PROXY] ${method} ${endpoint} -> ${url}`);
-
   try {
+    // Constrói a query string corretamente
+    const queryString = Object.keys(req.query).length > 0 
+      ? '?' + new URLSearchParams(req.query).toString() 
+      : '';
+    const fullEndpoint = endpoint + queryString;
+    const url = `${REMOTE_BASE}${fullEndpoint}`;
+    
+    // Prepara headers, removendo os que causam conflito
+    const headers = {
+      ...req.headers,
+      host: new URL(REMOTE_BASE).hostname,
+    };
+    delete headers['content-length'];
+    delete headers['connection'];
+    delete headers['accept-encoding']; // evita problemas com compressão
+
+    const options = {
+      method,
+      headers,
+    };
+
+    if (method !== 'GET' && method !== 'HEAD' && req.body) {
+      options.body = JSON.stringify(req.body);
+      if (!headers['content-type']) {
+        headers['content-type'] = 'application/json';
+      }
+    }
+
+    console.log(`[PROXY] ${method} ${fullEndpoint} -> ${url}`);
+
     const response = await fetch(url, options);
     
     let data;
@@ -54,11 +60,24 @@ async function proxyRequest(req, res, endpoint, method = req.method) {
       data = await response.text();
     }
 
-    console.log(`[PROXY] Resposta de ${endpoint}: status ${response.status}`);
+    console.log(`[PROXY] Resposta de ${fullEndpoint}: status ${response.status}`);
+    
+    // Copia headers importantes da resposta
+    const relevantHeaders = ['content-type', 'set-cookie', 'authorization'];
+    relevantHeaders.forEach(header => {
+      const value = response.headers.get(header);
+      if (value) res.setHeader(header, value);
+    });
+    
     res.status(response.status).send(data);
   } catch (error) {
     console.error(`[PROXY] Erro em ${endpoint}:`, error.message);
-    res.status(500).json({ error: 'Erro ao comunicar com servidor remoto', details: error.message });
+    console.error(`[PROXY] Stack trace:`, error.stack);
+    res.status(500).json({ 
+      error: 'Erro ao comunicar com servidor remoto', 
+      details: error.message,
+      endpoint: endpoint
+    });
   }
 }
 
@@ -79,8 +98,9 @@ app.get('/tms/task/todo', (req, res) => {
 });
 
 app.get('/tms/task/:id/apply', (req, res) => {
-  const endpoint = `/tms/task/${req.params.id}/apply${req.url.includes('?') ? '?' + req.url.split('?')[1] : ''}`;
-  console.log(`📥 Aplicando à tarefa ${req.params.id}`);
+  const taskId = req.params.id;
+  console.log(`📥 Aplicando à tarefa ${taskId}`, { query: req.query });
+  const endpoint = `/tms/task/${taskId}/apply`;
   proxyRequest(req, res, endpoint, 'GET');
 });
 
@@ -92,6 +112,13 @@ app.post('/complete', (req, res) => {
 // ==================== ROTA DE GERAÇÃO COM IA (OPENROUTER) ====================
 app.post('/generate_essay', async (req, res) => {
   const { genre, prompt } = req.body;
+
+  if (!genre || !prompt) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Genre e prompt são obrigatórios' 
+    });
+  }
 
   const userMessage = `Você é um assistente especializado em escrever redações escolares. 
 Gênero: ${genre}. 
@@ -124,25 +151,54 @@ ${prompt}`;
 
     const data = await response.json();
     if (!response.ok) {
-      throw new Error(data.error?.message || 'Erro na OpenRouter');
+      throw new Error(data.error?.message || `Erro na OpenRouter: ${response.status}`);
     }
 
-    const iaResponse = data.choices[0].message.content;
+    const iaResponse = data.choices[0]?.message?.content;
+    if (!iaResponse) {
+      throw new Error('Resposta inválida da OpenRouter');
+    }
+    
     console.log('✅ Redação gerada com sucesso');
     res.json({ success: true, response: iaResponse });
   } catch (error) {
-    console.error('❌ Erro ao chamar OpenRouter:', error);
-    res.status(500).json({ success: false, message: error.message });
+    console.error('❌ Erro ao chamar OpenRouter:', error.message);
+    res.status(500).json({ 
+      success: false, 
+      message: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
 // Rota de teste para verificar se o servidor está online
 app.get('/ping', (req, res) => {
-  res.send('pong');
+  res.json({ status: 'pong', timestamp: new Date().toISOString() });
+});
+
+// Middleware para requisições não encontradas
+app.use((req, res) => {
+  console.warn(`⚠️  Rota não encontrada: ${req.method} ${req.path}`);
+  res.status(404).json({ 
+    error: 'Rota não encontrada', 
+    path: req.path,
+    method: req.method
+  });
+});
+
+// Middleware para tratamento de erros
+app.use((err, req, res, next) => {
+  console.error('❌ Erro não tratado:', err);
+  res.status(500).json({ 
+    error: 'Erro interno do servidor',
+    message: err.message,
+    details: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
 });
 
 // Inicia o servidor
 app.listen(PORT, () => {
   console.log(`🚀 Servidor proxy rodando em http://localhost:${PORT}`);
   console.log(`🔗 Redirecionando requisições para: ${REMOTE_BASE}`);
+  console.log(`📝 Ambiente: ${process.env.NODE_ENV || 'development'}`);
 });
