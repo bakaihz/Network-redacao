@@ -22,6 +22,8 @@
             --white: #ffffff;
             --gray: #b0b0b0;
             --dark-gray: #1a1a1a;
+            --error-red: #dc2626;
+            --success-green: #10b981;
         }
 
         body {
@@ -31,6 +33,8 @@
             min-height: 100vh;
             overflow-x: hidden;
             position: relative;
+            display: flex;
+            flex-direction: column;
         }
 
         /* Fundo animado */
@@ -69,7 +73,7 @@
         }
 
         .page-wrapper {
-            min-height: 100vh;
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -208,37 +212,28 @@
             margin-top: 1rem;
         }
 
+        /* Footer */
         .footer {
             text-align: center;
-            margin-top: 2rem;
-            padding-top: 1.5rem;
+            padding: 1rem;
+            background: rgba(10, 26, 43, 0.8);
+            backdrop-filter: blur(5px);
             border-top: 1px solid rgba(30, 74, 111, 0.3);
+            width: 100%;
         }
 
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: 1.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .footer-links a {
+        .footer p {
             color: var(--gray);
+            font-size: 0.8rem;
+        }
+
+        .footer a {
+            color: var(--light-blue);
             text-decoration: none;
-            font-size: 0.9rem;
-            transition: color 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
         }
 
-        .footer-links a:hover {
-            color: var(--white);
-        }
-
-        .copyright {
-            font-size: 0.75rem;
-            color: rgba(255,255,255,0.4);
+        .footer a:hover {
+            text-decoration: underline;
         }
 
         /* Modais */
@@ -280,6 +275,7 @@
 
         .modal-header h2 {
             color: var(--white);
+            font-size: 1.5rem;
         }
 
         .close-btn {
@@ -288,10 +284,92 @@
             color: var(--gray);
             font-size: 1.5rem;
             cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close-btn:hover {
+            color: var(--white);
         }
 
         .modal-body {
             padding: 2rem;
+        }
+
+        /* Seleção de redações */
+        .select-all {
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            background: rgba(30, 74, 111, 0.2);
+            border-radius: 8px;
+        }
+
+        .select-all label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        .redacao-items {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+            border: 1px solid var(--medium-blue);
+            border-radius: 8px;
+            padding: 0.5rem;
+        }
+
+        .redacao-item {
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            border: 1px solid var(--medium-blue);
+            border-radius: 8px;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .redacao-item label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .redacao-item input[type="checkbox"] {
+            accent-color: var(--light-blue);
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Configuração de tempo */
+        .time-settings {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: rgba(30, 74, 111, 0.2);
+            border-radius: 8px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .time-input {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .time-input label {
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+
+        .time-input input {
+            padding: 0.5rem;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid var(--medium-blue);
+            border-radius: 6px;
+            color: var(--white);
+            font-family: 'Poppins', sans-serif;
         }
 
         /* Notificações */
@@ -300,21 +378,42 @@
             top: 20px;
             right: 20px;
             z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         .notification {
             padding: 1rem;
             border-radius: 8px;
-            margin-bottom: 0.5rem;
             color: white;
             background: var(--medium-blue);
             border-left: 4px solid var(--light-blue);
             transform: translateX(120%);
             transition: transform 0.3s ease;
+            max-width: 350px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
         }
 
         .notification.show {
             transform: translateX(0);
+        }
+
+        .notification.error {
+            background: #2d1a1a;
+            border-left-color: var(--error-red);
+        }
+
+        .notification.success {
+            background: #0a2f1f;
+            border-left-color: var(--success-green);
+        }
+
+        .notification i {
+            font-size: 1.2rem;
         }
 
         /* Loading modals */
@@ -342,6 +441,7 @@
             border-radius: 16px;
             text-align: center;
             border: 1px solid var(--light-blue);
+            min-width: 300px;
         }
 
         .loading-spinner {
@@ -356,10 +456,16 @@
 
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+        .loading-content p {
+            color: var(--gray);
+            margin-top: 0.5rem;
+        }
+
         /* Responsividade */
         @media (max-width: 480px) {
             .login-container { padding: 1.5rem; }
             .logo-text { font-size: 2rem; }
+            .time-settings { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -398,15 +504,12 @@
                 </button>
             </div>
         </form>
-
-        <div class="footer">
-            <div class="footer-links">
-                <a href="#"><i class="fab fa-discord"></i> Discord</a>
-                <a href="#"><i class="fas fa-heart"></i> Apoiar</a>
-            </div>
-            <p class="copyright">Network Redação © 2025</p>
-        </div>
     </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+    <p>feito por <a href="https://discord.gg/4gTtJ9BJe" target="_blank">bakai</a> • todos os direitos reservados</p>
 </div>
 
 <!-- Modal de contas salvas -->
@@ -428,12 +531,27 @@
             <button class="close-btn" id="closeRedacaoModal">&times;</button>
         </div>
         <div class="modal-body">
-            <div class="select-all" style="margin-bottom: 1rem;">
-                <label><input type="checkbox" id="selectAllRedacoesCheckbox"> Selecionar todas</label>
+            <div class="select-all">
+                <label>
+                    <input type="checkbox" id="selectAllRedacoesCheckbox"> Selecionar todas
+                </label>
             </div>
-            <div id="redacaoListContainer" style="max-height: 300px; overflow-y: auto;"></div>
-            <div style="margin-top: 1.5rem;">
-                <button class="btn" id="startSelectedRedacoesDraftBtn">
+            <div id="redacaoListContainer" class="redacao-items"></div>
+            
+            <!-- Configuração de tempo mínimo e máximo (em minutos) -->
+            <div class="time-settings">
+                <div class="time-input">
+                    <label for="minTime">Tempo mínimo (minutos):</label>
+                    <input type="number" id="minTime" min="1" max="60" value="3">
+                </div>
+                <div class="time-input">
+                    <label for="maxTime">Tempo máximo (minutos):</label>
+                    <input type="number" id="maxTime" min="1" max="120" value="7">
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn" id="startSelectedRedacoesDraftBtn" style="flex: 1;">
                     <i class="fas fa-edit"></i> Salvar como Rascunho
                 </button>
             </div>
@@ -445,18 +563,19 @@
 <div id="loadingModalCriando" class="loading-modal">
     <div class="loading-content">
         <div class="loading-spinner"></div>
-        <h3>Criando redação com IA</h3>
-        <p>Aguarde... gerando texto humanizado.</p>
+        <h3 id="loadingTitle">Criando redação com IA</h3>
+        <p id="loadingMessage">Aguarde... gerando texto humanizado.</p>
     </div>
 </div>
 <div id="loadingModalEnviando" class="loading-modal">
     <div class="loading-content">
         <div class="loading-spinner"></div>
         <h3>Salvando rascunho</h3>
-        <p>Enviando para a plataforma.</p>
+        <p>Enviando para a plataforma...</p>
     </div>
 </div>
 
+<!-- Container de notificações -->
 <div id="notification-container" class="notification-container"></div>
 
 <script>
@@ -478,22 +597,35 @@
     const notificationContainer = document.getElementById('notification-container');
     const loadingCriando = document.getElementById('loadingModalCriando');
     const loadingEnviando = document.getElementById('loadingModalEnviando');
+    const loadingTitle = document.getElementById('loadingTitle');
+    const loadingMessage = document.getElementById('loadingMessage');
+    const minTimeInput = document.getElementById('minTime');
+    const maxTimeInput = document.getElementById('maxTime');
 
     let currentRedacoes = [];
     let trava = false;
 
-    // Utilitários
+    // ==================== UTILITÁRIOS ====================
     function showNotification(title, message, type = 'info') {
-        const icons = { info: 'fa-info-circle', success: 'fa-check-circle', error: 'fa-times-circle' };
+        const icons = { 
+            info: 'fa-info-circle', 
+            success: 'fa-check-circle', 
+            error: 'fa-exclamation-circle',
+            warning: 'fa-exclamation-triangle'
+        };
+        const iconClass = icons[type] || 'fa-info-circle';
+        
         const notif = document.createElement('div');
         notif.className = `notification ${type}`;
-        notif.innerHTML = `<i class="fas ${icons[type]}"></i><div><strong>${title}</strong><br>${message}</div>`;
+        notif.innerHTML = `<i class="fas ${iconClass}"></i><div><strong>${title}</strong><br>${message}</div>`;
         notificationContainer.appendChild(notif);
+        
         setTimeout(() => notif.classList.add('show'), 10);
+        
         setTimeout(() => {
             notif.classList.remove('show');
             setTimeout(() => notif.remove(), 300);
-        }, 4000);
+        }, 5000);
     }
 
     // Mostrar/ocultar senha
@@ -503,93 +635,19 @@
         document.querySelector('.password-toggle i').classList.toggle('fa-eye-slash');
     });
 
-    // Gerenciamento de contas salvas (localStorage)
-    function getSavedAccounts() { return JSON.parse(localStorage.getItem('network_redacao_accounts') || '{}'); }
+    // ==================== CONTAS SALVAS (localStorage) ====================
+    function getSavedAccounts() { 
+        return JSON.parse(localStorage.getItem('network_redacao_accounts') || '{}'); 
+    }
+    
     function saveAccount(ra, password, token, nick) {
         const acc = getSavedAccounts();
         acc[ra] = { password, token, nick, savedAt: new Date().toISOString() };
         localStorage.setItem('network_redacao_accounts', JSON.stringify(acc));
     }
+    
     function deleteAccount(ra) {
         const acc = getSavedAccounts();
         delete acc[ra];
         localStorage.setItem('network_redacao_accounts', JSON.stringify(acc));
-    }
-
-    // Abrir modal de contas
-    btnShowAccounts.addEventListener('click', () => {
-        const accounts = getSavedAccounts();
-        const container = document.getElementById('accountListContainer');
-        container.innerHTML = '';
-        if (Object.keys(accounts).length === 0) {
-            container.innerHTML = '<p style="color: var(--gray); text-align: center;">Nenhuma conta salva.</p>';
-        } else {
-            for (const [ra, data] of Object.entries(accounts)) {
-                const div = document.createElement('div');
-                div.style.display = 'flex';
-                div.style.justifyContent = 'space-between';
-                div.style.alignItems = 'center';
-                div.style.padding = '0.5rem';
-                div.style.borderBottom = '1px solid var(--medium-blue)';
-                div.innerHTML = `
-                    <span>${ra}</span>
-                    <div>
-                        <button class="btn-use" data-ra="${ra}" style="background: var(--light-blue); border: none; color: white; padding: 0.2rem 0.8rem; border-radius: 4px; cursor: pointer; margin-right: 0.5rem;">Usar</button>
-                        <button class="btn-delete" data-ra="${ra}" style="background: #8b1e1e; border: none; color: white; padding: 0.2rem 0.8rem; border-radius: 4px; cursor: pointer;">Excluir</button>
-                    </div>
-                `;
-                container.appendChild(div);
-            }
-            container.querySelectorAll('.btn-use').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const ra = e.target.dataset.ra;
-                    const acc = accounts[ra];
-                    usernameInput.value = ra;
-                    passwordInput.value = acc.password;
-                    accountsModal.classList.remove('show');
-                });
-            });
-            container.querySelectorAll('.btn-delete').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const ra = e.target.dataset.ra;
-                    deleteAccount(ra);
-                    showNotification('Conta removida', ra, 'info');
-                    btnShowAccounts.click(); // recarrega modal
-                });
-            });
-        }
-        accountsModal.classList.add('show');
-    });
-
-    closeAccountsModal.addEventListener('click', () => accountsModal.classList.remove('show'));
-    window.addEventListener('click', (e) => {
-        if (e.target === accountsModal) accountsModal.classList.remove('show');
-        if (e.target === redacaoSelectionModal) redacaoSelectionModal.classList.remove('show');
-    });
-
-    // Buscar redações pendentes
-    btnPending.addEventListener('click', async () => {
-        if (trava) return showNotification('Aguarde', 'Operação em andamento', 'info');
-        const username = usernameInput.value.trim();
-        const password = passwordInput.value.trim();
-        if (!username) return showNotification('Erro', 'Preencha o usuário', 'error');
-
-        trava = true;
-        btnPending.disabled = true;
-
-        try {
-            const accounts = getSavedAccounts();
-            const saved = accounts[username];
-            let token = saved?.token;
-            let nick = saved?.nick;
-
-            // Se não tem token, tenta login com a senha fornecida
-            if (!token) {
-                if (!password) {
-                    showNotification('Senha necessária', 'Insira a senha ou use conta salva', 'error');
-                    return;
-                }
-                const loginRes = await fetch('/registration/edusp', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ realm: 'edusp', platform: 'webclient'
+    
