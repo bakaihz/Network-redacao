@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Redação</title>
+    <meta name="description" content="Automação de redações com IA">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --dark-blue: #0a1a2b;
+            --medium-blue: #0a2f44;
+            --light-blue: #1e4a6f;
+            --white: #ffffff;
+            --gray: #b0b0b0;
+            --dark-gray: #1a1a1a;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #000;
+            color: var(--white);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Fundo animado */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(10, 47, 68, 0.5) 0%, transparent 30%),
+                radial-gradient(circle at 80% 70%, rgba(30, 74, 111, 0.5) 0%, transparent 40%),
+                radial-gradient(circle at 40% 80%, rgba(10, 26, 43, 0.8) 0%, transparent 50%),
+                linear-gradient(135deg, #000000 0%, #0a1a2b 70%, #000000 100%);
+            background-blend-mode: overlay;
+            animation: moveBackground 20s ease-in-out infinite alternate;
+            z-index: -2;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(45deg, rgba(0,0,0,0.02) 0px, rgba(0,40,80,0.05) 2px, transparent 3px);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @keyframes moveBackground {
+            0% { transform: scale(1) translate(0, 0); }
+            100% { transform: scale(1.05) translate(-1%, -1%); }
+        }
+
+        .page-wrapper {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            backdrop-filter: blur(1px);
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 380px;
+            padding: 2rem;
+            margin: 1rem;
+            background: rgba(10, 26, 43, 0.6);
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            border: 1px solid rgba(30, 74, 111, 0.3);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo-section {
+            margin-bottom: 1rem;
+        }
+
+        .logo-text {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--light-blue), var(--white));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: var(--gray);
+            font-weight: 400;
+            margin-bottom: 0.5rem;
+        }
+
+        .tagline {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--light-blue);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-bottom: 0.5rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid var(--medium-blue);
+            border-radius: 8px;
+            color: var(--white);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--light-blue);
+            box-shadow: 0 0 0 2px rgba(30, 74, 111, 0.3);
+        }
+
+        .input-group input[type="password"] {
+            padding-right: 2.5rem;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background: var(--medium-blue);
+            color: white;
+            border: 1px solid var(--light-blue);
+        }
+
+        .btn:hover {
+            background: var(--light-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(30, 74, 111, 0.4);
+        }
+
+        .btn-accounts {
+            background: transparent;
+            border: 1px solid var(--light-blue);
+            margin-bottom: 1.5rem;
+        }
+
+        .form-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(30, 74, 111, 0.3);
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .footer-links a {
+            color: var(--gray);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .footer-links a:hover {
+            color: var(--white);
+        }
+
+        .copyright {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.4);
+        }
+
+        /* Modais */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--dark-blue);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 600px;
+            border: 1px solid var(--light-blue);
+            box-shadow: 0 20px 60px rgba(0,20,40,0.6);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--medium-blue);
+        }
+
+        .modal-header h2 {
+            color: var(--white);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--gray);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        /* Notificações */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+        }
+
+        .notification {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            color: white;
+            background: var(--medium-blue);
+            border-left: 4px solid var(--light-blue);
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        /* Loading modals */
+        .loading-modal {
+            display: none;
+            position: fixed;
+            z-index: 1500;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-modal.show {
+            display: flex;
+        }
+
+        .loading-content {
+            background: var(--dark-blue);
+            padding: 2rem;
+            border-radius: 16px;
+            text-align: center;
+            border: 1px solid var(--light-blue);
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top: 4px solid var(--light-blue);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Responsividade */
+        @media (max-width: 480px) {
+            .login-container { padding: 1.5rem; }
+            .logo-text { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="page-wrapper">
+    <div class="login-container">
+        <div class="header">
+            <div class="logo-section">
+                <h1 class="logo-text">Network Redação</h1>
+            </div>
+            <p class="subtitle">Automação inteligente com IA</p>
+            <p class="tagline">CMSP • Redação SP</p>
+        </div>
+
+        <form id="loginForm">
+            <button type="button" class="btn btn-accounts" id="btnShowAccounts">
+                <i class="fas fa-users"></i> Contas Salvas
+            </button>
+
+            <div class="input-group">
+                <label for="username">Usuário (RA):</label>
+                <input type="text" id="username" placeholder="Ex. 123456789xsp" required>
+            </div>
+
+            <div class="input-group">
+                <label for="password">Senha:</label>
+                <div class="input-wrapper">
+                    <input type="password" id="password" placeholder="Sua senha" required>
+                    <button type="button" class="password-toggle"><i class="fas fa-eye"></i></button>
+                </div>
+            </div>
+
+            <div class="form-buttons">
+                <button type="button" class="btn" id="btnPending">
+                    <i class="fas fa-clock"></i> Redações Pendentes
+                </button>
+            </div>
+        </form>
+
+        <div class="footer">
+            <div class="footer-links">
+                <a href="#"><i class="fab fa-discord"></i> Discord</a>
+                <a href="#"><i class="fas fa-heart"></i> Apoiar</a>
+            </div>
+            <p class="copyright">Network Redação © 2025</p>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de contas salvas -->
+<div id="accountsModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Contas Salvas</h2>
+            <button class="close-btn" id="closeAccountsModal">&times;</button>
+        </div>
+        <div class="modal-body" id="accountListContainer"></div>
+    </div>
+</div>
+
+<!-- Modal de seleção de redações -->
+<div id="redacaoSelectionModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="redacaoSelectionModalTitle">Redações Pendentes</h2>
+            <button class="close-btn" id="closeRedacaoModal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="select-all" style="margin-bottom: 1rem;">
+                <label><input type="checkbox" id="selectAllRedacoesCheckbox"> Selecionar todas</label>
+            </div>
+            <div id="redacaoListContainer" style="max-height: 300px; overflow-y: auto;"></div>
+            <div style="margin-top: 1.5rem;">
+                <button class="btn" id="startSelectedRedacoesDraftBtn">
+                    <i class="fas fa-edit"></i> Salvar como Rascunho
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading modals -->
+<div id="loadingModalCriando" class="loading-modal">
+    <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <h3>Criando redação com IA</h3>
+        <p>Aguarde... gerando texto humanizado.</p>
+    </div>
+</div>
+<div id="loadingModalEnviando" class="loading-modal">
+    <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <h3>Salvando rascunho</h3>
+        <p>Enviando para a plataforma.</p>
+    </div>
+</div>
+
+<div id="notification-container" class="notification-container"></div>
+
+<script>
+    // URLs relativas (mesmo servidor)
+    const API_BASE_URL = '';
+
+    // Elementos DOM
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const btnPending = document.getElementById('btnPending');
+    const btnShowAccounts = document.getElementById('btnShowAccounts');
+    const accountsModal = document.getElementById('accountsModal');
+    const closeAccountsModal = document.getElementById('closeAccountsModal');
+    const redacaoSelectionModal = document.getElementById('redacaoSelectionModal');
+    const closeRedacaoModal = document.getElementById('closeRedacaoModal');
+    const selectAllCheckbox = document.getElementById('selectAllRedacoesCheckbox');
+    const startDraftBtn = document.getElementById('startSelectedRedacoesDraftBtn');
+    const redacaoListContainer = document.getElementById('redacaoListContainer');
+    const notificationContainer = document.getElementById('notification-container');
+    const loadingCriando = document.getElementById('loadingModalCriando');
+    const loadingEnviando = document.getElementById('loadingModalEnviando');
+
+    let currentRedacoes = [];
+    let trava = false;
+
+    // Utilitários
+    function showNotification(title, message, type = 'info') {
+        const icons = { info: 'fa-info-circle', success: 'fa-check-circle', error: 'fa-times-circle' };
+        const notif = document.createElement('div');
+        notif.className = `notification ${type}`;
+        notif.innerHTML = `<i class="fas ${icons[type]}"></i><div><strong>${title}</strong><br>${message}</div>`;
+        notificationContainer.appendChild(notif);
+        setTimeout(() => notif.classList.add('show'), 10);
+        setTimeout(() => {
+            notif.classList.remove('show');
+            setTimeout(() => notif.remove(), 300);
+        }, 4000);
+    }
+
+    // Mostrar/ocultar senha
+    document.querySelector('.password-toggle').addEventListener('click', () => {
+        const type = passwordInput.type === 'password' ? 'text' : 'password';
+        passwordInput.type = type;
+        document.querySelector('.password-toggle i').classList.toggle('fa-eye-slash');
+    });
+
+    // Gerenciamento de contas salvas (localStorage)
+    function getSavedAccounts() { return JSON.parse(localStorage.getItem('network_redacao_accounts') || '{}'); }
+    function saveAccount(ra, password, token, nick) {
+        const acc = getSavedAccounts();
+        acc[ra] = { password, token, nick, savedAt: new Date().toISOString() };
+        localStorage.setItem('network_redacao_accounts', JSON.stringify(acc));
+    }
+    function deleteAccount(ra) {
+        const acc = getSavedAccounts();
+        delete acc[ra];
+        localStorage.setItem('network_redacao_accounts', JSON.stringify(acc));
+    }
+
+    // Abrir modal de contas
+    btnShowAccounts.addEventListener('click', () => {
+        const accounts = getSavedAccounts();
+        const container = document.getElementById('accountListContainer');
+        container.innerHTML = '';
+        if (Object.keys(accounts).length === 0) {
+            container.innerHTML = '<p style="color: var(--gray); text-align: center;">Nenhuma conta salva.</p>';
+        } else {
+            for (const [ra, data] of Object.entries(accounts)) {
+                const div = document.createElement('div');
+                div.style.display = 'flex';
+                div.style.justifyContent = 'space-between';
+                div.style.alignItems = 'center';
+                div.style.padding = '0.5rem';
+                div.style.borderBottom = '1px solid var(--medium-blue)';
+                div.innerHTML = `
+                    <span>${ra}</span>
+                    <div>
+                        <button class="btn-use" data-ra="${ra}" style="background: var(--light-blue); border: none; color: white; padding: 0.2rem 0.8rem; border-radius: 4px; cursor: pointer; margin-right: 0.5rem;">Usar</button>
+                        <button class="btn-delete" data-ra="${ra}" style="background: #8b1e1e; border: none; color: white; padding: 0.2rem 0.8rem; border-radius: 4px; cursor: pointer;">Excluir</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            }
+            container.querySelectorAll('.btn-use').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const ra = e.target.dataset.ra;
+                    const acc = accounts[ra];
+                    usernameInput.value = ra;
+                    passwordInput.value = acc.password;
+                    accountsModal.classList.remove('show');
+                });
+            });
+            container.querySelectorAll('.btn-delete').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const ra = e.target.dataset.ra;
+                    deleteAccount(ra);
+                    showNotification('Conta removida', ra, 'info');
+                    btnShowAccounts.click(); // recarrega modal
+                });
+            });
+        }
+        accountsModal.classList.add('show');
+    });
+
+    closeAccountsModal.addEventListener('click', () => accountsModal.classList.remove('show'));
+    window.addEventListener('click', (e) => {
+        if (e.target === accountsModal) accountsModal.classList.remove('show');
+        if (e.target === redacaoSelectionModal) redacaoSelectionModal.classList.remove('show');
+    });
+
+    // Buscar redações pendentes
+    btnPending.addEventListener('click', async () => {
+        if (trava) return showNotification('Aguarde', 'Operação em andamento', 'info');
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value.trim();
+        if (!username) return showNotification('Erro', 'Preencha o usuário', 'error');
+
+        trava = true;
+        btnPending.disabled = true;
+
+        try {
+            const accounts = getSavedAccounts();
+            const saved = accounts[username];
+            let token = saved?.token;
+            let nick = saved?.nick;
+
+            // Se não tem token, tenta login com a senha fornecida
+            if (!token) {
+                if (!password) {
+                    showNotification('Senha necessária', 'Insira a senha ou use conta salva', 'error');
+                    return;
+                }
+                const loginRes = await fetch('/registration/edusp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ realm: 'edusp', platform: 'webclient'
