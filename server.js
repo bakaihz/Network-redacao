@@ -8,27 +8,31 @@ const PORT = process.env.PORT || 3000;
 // Middlewares
 app.use(cors());
 app.use(express.json());
+
+// ✅ Rota manual para servir o index.html na raiz
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Servir arquivos estáticos (fallback)
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ==================== CONFIGURAÇÕES ====================
-const EDUSP_API_BASE = 'https://edusp-api.ip.tv'; // API real da Edusp
+const REMOTE_BASE = 'https://network-class.onrender.com'; // 🟢 SEU SERVIDOR
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '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';
 const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 const MODEL = 'openai/gpt-oss-120b:free';
 
-// Chave fixa para o primeiro endpoint (credenciais)
+// Chave fixa para o primeiro endpoint (credenciais) – não muda
 const CREDENTIALS_SUBSCRIPTION_KEY = '2b03c1db3884488795f79c37c069381a';
 
 // ==================== FUNÇÃO PROXY ====================
 async function proxyRequest(req, res, endpoint, method = req.method) {
-  const url = `${EDUSP_API_BASE}${endpoint}`;
+  const url = `${REMOTE_BASE}${endpoint}`;
   
-  // Prepara headers, forçando os necessários
   const headers = {
     ...req.headers,
-    'x-api-realm': 'edusp',
-    'x-api-platform': 'webclient',
-    host: new URL(EDUSP_API_BASE).host,
+    host: new URL(REMOTE_BASE).host,
   };
   delete headers['content-length'];
   delete headers['connection'];
@@ -101,7 +105,8 @@ app.post('/registration/edusp', async (req, res) => {
       return res.status(401).json({ error: 'Token não recebido na primeira etapa' });
     }
 
-    // 2ª etapa: trocar token pelo auth_token
+    // 2ª etapa: trocar token pelo auth_token (aqui usamos o mesmo servidor remoto?)
+    // Nota: o servidor remoto pode ter um endpoint diferente. Vamos usar o mesmo padrão.
     console.log('🔄 Trocando token pelo auth_token...');
     const authResponse = await fetch('https://edusp-api.ip.tv/registration/edusp/token', {
       method: 'POST',
@@ -140,7 +145,7 @@ app.post('/registration/edusp', async (req, res) => {
   }
 });
 
-// ==================== ROTAS PROXY PARA API DA EDUSP ====================
+// ==================== ROTAS PROXY PARA O SERVIDOR REMOTO ====================
 app.get('/room/user', (req, res) => {
   console.log('📥 Buscando salas do usuário');
   proxyRequest(req, res, '/room/user', 'GET');
@@ -217,5 +222,5 @@ app.get('/ping', (req, res) => {
 // Inicia o servidor
 app.listen(PORT, () => {
   console.log(`🚀 Servidor proxy rodando em http://localhost:${PORT}`);
-  console.log(`🔗 Rotas redirecionadas para: ${EDUSP_API_BASE}`);
+  console.log(`🔗 Rotas redirecionadas para: ${REMOTE_BASE}`);
 });
