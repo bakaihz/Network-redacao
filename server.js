@@ -23,8 +23,11 @@ const CREDENTIALS_SUBSCRIPTION_KEY = '2b03c1db3884488795f79c37c069381a';
 async function proxyRequest(req, res, endpoint, method = req.method) {
   const url = `${EDUSP_API_BASE}${endpoint}`;
   
+  // Prepara headers, forçando os necessários
   const headers = {
     ...req.headers,
+    'x-api-realm': 'edusp',
+    'x-api-platform': 'webclient',
     host: new URL(EDUSP_API_BASE).host,
   };
   delete headers['content-length'];
@@ -44,6 +47,7 @@ async function proxyRequest(req, res, endpoint, method = req.method) {
   }
 
   try {
+    console.log(`[PROXY] ${method} ${endpoint} -> ${url}`);
     const response = await fetch(url, options);
     let data;
     const contentType = response.headers.get('content-type');
@@ -52,7 +56,7 @@ async function proxyRequest(req, res, endpoint, method = req.method) {
     } else {
       data = await response.text();
     }
-    console.log(`[PROXY] ${method} ${endpoint} -> status ${response.status}`);
+    console.log(`[PROXY] Resposta de ${endpoint}: status ${response.status}`);
     res.status(response.status).send(data);
   } catch (error) {
     console.error(`[PROXY] Erro em ${endpoint}:`, error.message);
