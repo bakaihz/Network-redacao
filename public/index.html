@@ -682,88 +682,102 @@
             }
 
             // Buscar salas
-            console.log('Buscando salas com token:', token);
-            const roomsRes = await fetch('/room/user?list_all=true&with_cards=true', {
-                headers: { 'x-api-key': token }
-            });
-            
-            if (!roomsRes.ok) {
-                const errorData = await roomsRes.json().catch(() => ({}));
-                throw { status: roomsRes.status, message: errorData.error || 'Erro ao buscar salas' };
-            }
-            
-            const roomsData = await roomsRes.json();
-            const rooms = roomsData.rooms || [];
-            if (!rooms.length) {
-                showNotification('Aviso', 'Nenhuma sala encontrada para este usuário', 'warning');
-                return;
-            }
+console.log('Buscando salas com token:', token);
+const roomsRes = await fetch('/room/user?list_all=true&with_cards=true', {
+    headers: { 'x-api-key': token }
+});
 
-            const targets = rooms.map(r => r.name);
-            const params = new URLSearchParams({
-                limit: 100, offset: 0, is_exam: false, with_answer: true,
-                is_essay: true, with_apply_moment: true, expired_only: false, filter_expired: true
-            });
-            targets.forEach(t => params.append('publication_target', t));
-            params.append('answer_statuses', 'pending');
-            params.append('answer_statuses', 'draft');
+if (!roomsRes.ok) {
+    const errorData = await roomsRes.json().catch(() => ({}));
+    throw { status: roomsRes.status, message: errorData.error || 'Erro ao buscar salas' };
+}
 
-            console.log('Buscando redações com parâmetros:', params.toString());
-            const todoRes = await fetch(`/tms/task/todo?${params.toString()}`, {
-                headers: { 'x-api-key': token }
-            });
-            
-            if (!todoRes.ok) {
-                const errorData = await todoRes.json().catch(() => ({}));
-                throw { status: todoRes.status, message: errorData.error || 'Erro ao buscar redações' };
-            }
-            
-            let redacoes = await todoRes.json();
-            if (!Array.isArray(redacoes)) redacoes = [];
+const roomsData = await roomsRes.json();
+console.log('Resposta completa de /room/user:', roomsData);
 
-            if (redacoes.length === 0) {
-                showNotification('Nenhuma redação', 'Nenhuma redação pendente ou rascunho encontrado.', 'info');
-                return;
-            }
+// Extrai as salas (formato pode variar)
+let rooms = [];
+if (roomsData.rooms && Array.isArray(roomsData.rooms)) {
+    rooms = roomsData.rooms;
+} else if (roomsData.data && Array.isArray(roomsData.data)) {
+    rooms = roomsData.data;
+} else if (Array.isArray(roomsData)) {
+    rooms = roomsData;
+} else {
+    console.error('Formato inesperado de rooms:', roomsData);
+    showNotification('Erro', 'Formato de resposta inesperado ao buscar salas', 'error');
+    return;
+}
 
-            currentRedacoes = redacoes.map(r => ({ ...r, token, room: r.publication_target }));
-            displayRedacoes(currentRedacoes);
-            redacaoSelectionModal.classList.add('show');
-            showNotification('Sucesso', `${redacoes.length} redação(ões) encontrada(s)`, 'success');
-            
-        } catch (error) {
-            console.error('Erro detalhado:', error);
-            
-            let errorMessage = error.message || 'Erro desconhecido';
-            let errorTitle = 'Erro';
-            
-            if (error.status === 401) {
-                errorTitle = 'Sessão expirada';
-                errorMessage = 'Token inválido. Faça login novamente.';
-                const username = usernameInput.value.trim();
-                if (username) {
-                    const accounts = getSavedAccounts();
-                    if (accounts[username]) {
-                        delete accounts[username].token;
-                        localStorage.setItem('network_redacao_accounts', JSON.stringify(accounts));
-                    }
-                }
-            } else if (error.status === 403) {
-                errorTitle = 'Acesso negado';
-            } else if (error.status === 404) {
-                errorTitle = 'Não encontrado';
-            } else if (error.status === 500) {
-                errorTitle = 'Erro no servidor';
-                errorMessage = 'Tente novamente mais tarde';
-            }
-            
-            showNotification(errorTitle, errorMessage, 'error');
-        } finally {
-            trava = false;
-            setTimeout(() => btnPending.disabled = false, 2000);
+if (rooms.length === 0) {
+    showNotification('Aviso', 'Nenhuma sala encontrada para este usuário. Verifique se o RA está correto.', 'warning');
+    return;
+}
+
+// Extrai o nick do usuário (disponível na conta salva)
+const accounts = getSavedAccounts();
+const account = accounts[username];
+const nick = account?.nick || ''; // ou você pode ter guardado em outra variável
+
+// Constrói o conjunto de targets: nomes das salas e nomes com nick
+const targets = new Set();
+rooms.forEach(room => {
+    const roomName = room.name || room.nome || room.id;
+    if (roomName) {
+        targets.add(roomName);
+        if (nick) {
+            targets.add(`${roomName}:${nick}`);
         }
-    });
+    }
+});
 
+const targetsArray = Array.from(targets);
+console.log('Targets (publication_target):', targetsArray);
+
+if (targetsArray.length === 0) {
+    showNotification('Erro', 'Não foi possível extrair os nomes das salas', 'error');
+    return;
+}
+
+// Monta os parâmetros para buscar redações
+const params = new URLSearchParams({
+    limit: 100,
+    offset: 0,
+    is_exam: false,
+    with_answer: true,
+    is_essay: true,
+    with_apply_moment: true,
+    expired_only: false,
+    filter_expired: true
+});
+targetsArray.forEach(t => params.append('publication_target', t));
+params.append('answer_statuses', 'pending');
+params.append('answer_statuses', 'draft');
+
+console.log('Buscando redações com parâmetros:', params.toString());
+
+const todoRes = await fetch(`/tms/task/todo?${params.toString()}`, {
+    headers: { 'x-api-key': token }
+});
+
+if (!todoRes.ok) {
+    const errorData = await todoRes.json().catch(() => ({}));
+    console.error('Erro ao buscar redações:', errorData);
+    throw { status: todoRes.status, message: errorData.message || 'Erro ao buscar redações' };
+}
+
+let redacoes = await todoRes.json();
+if (!Array.isArray(redacoes)) redacoes = [];
+
+if (redacoes.length === 0) {
+    showNotification('Nenhuma redação', 'Nenhuma redação pendente ou rascunho encontrado.', 'info');
+    return;
+}
+
+currentRedacoes = redacoes.map(r => ({ ...r, token, room: r.publication_target }));
+displayRedacoes(currentRedacoes);
+redacaoSelectionModal.classList.add('show');
+showNotification('Sucesso', `${redacoes.length} redação(ões) encontrada(s)`, 'success');
     function displayRedacoes(redacoes) {
         redacaoListContainer.innerHTML = '';
         redacoes.forEach(r => {
