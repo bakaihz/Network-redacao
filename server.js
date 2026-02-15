@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ==================== CONFIGURAÇÕES ====================
-const REMOTE_BASE = 'https://network-class.onrender.com'; // servidor remoto (para todas as rotas, exceto login)
+const EDUSP_API_BASE = 'https://edusp-api.ip.tv'; // API real da Edusp
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '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';
 const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 const MODEL = 'openai/gpt-oss-120b:free';
@@ -21,11 +21,11 @@ const CREDENTIALS_SUBSCRIPTION_KEY = '2b03c1db3884488795f79c37c069381a';
 
 // ==================== FUNÇÃO PROXY ====================
 async function proxyRequest(req, res, endpoint, method = req.method) {
-  const url = `${REMOTE_BASE}${endpoint}`;
+  const url = `${EDUSP_API_BASE}${endpoint}`;
   
   const headers = {
     ...req.headers,
-    host: new URL(REMOTE_BASE).host,
+    host: new URL(EDUSP_API_BASE).host,
   };
   delete headers['content-length'];
   delete headers['connection'];
@@ -52,6 +52,7 @@ async function proxyRequest(req, res, endpoint, method = req.method) {
     } else {
       data = await response.text();
     }
+    console.log(`[PROXY] ${method} ${endpoint} -> status ${response.status}`);
     res.status(response.status).send(data);
   } catch (error) {
     console.error(`[PROXY] Erro em ${endpoint}:`, error.message);
@@ -135,8 +136,7 @@ app.post('/registration/edusp', async (req, res) => {
   }
 });
 
-// ==================== ROTAS PROXY PARA O SERVIDOR REMOTO ====================
-// Todas as rotas que não são de login serão redirecionadas para https://network-class.onrender.com
+// ==================== ROTAS PROXY PARA API DA EDUSP ====================
 app.get('/room/user', (req, res) => {
   console.log('📥 Buscando salas do usuário');
   proxyRequest(req, res, '/room/user', 'GET');
@@ -213,5 +213,5 @@ app.get('/ping', (req, res) => {
 // Inicia o servidor
 app.listen(PORT, () => {
   console.log(`🚀 Servidor proxy rodando em http://localhost:${PORT}`);
-  console.log(`🔗 Rotas redirecionadas para: ${REMOTE_BASE}`);
+  console.log(`🔗 Rotas redirecionadas para: ${EDUSP_API_BASE}`);
 });
