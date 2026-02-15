@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Redação</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --dark-blue: #0a1a2b;
+            --medium-blue: #0a2f44;
+            --light-blue: #1e4a6f;
+            --white: #ffffff;
+            --gray: #b0b0b0;
+            --dark-gray: #1a1a1a;
+            --error-red: #dc2626;
+            --success-green: #10b981;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #000;
+            color: var(--white);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Fundo animado */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(10, 47, 68, 0.4) 0%, transparent 30%),
+                radial-gradient(circle at 80% 70%, rgba(30, 74, 111, 0.4) 0%, transparent 40%),
+                radial-gradient(circle at 40% 80%, rgba(10, 26, 43, 0.6) 0%, transparent 50%),
+                linear-gradient(135deg, #000000 0%, #0a1a2b 70%, #000000 100%);
+            background-blend-mode: overlay;
+            animation: moveBackground 20s ease-in-out infinite alternate;
+            z-index: -2;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(45deg, rgba(0,0,0,0.02) 0px, rgba(0,40,80,0.05) 2px, transparent 3px);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @keyframes moveBackground {
+            0% { transform: scale(1) translate(0, 0); }
+            100% { transform: scale(1.05) translate(-1%, -1%); }
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            background: rgba(10, 26, 43, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 2rem;
+            border: 1px solid rgba(30, 74, 111, 0.3);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--light-blue), var(--white));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo p {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-bottom: 0.5rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid var(--medium-blue);
+            border-radius: 12px;
+            color: var(--white);
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .input-wrapper input:focus {
+            outline: none;
+            border-color: var(--light-blue);
+            box-shadow: 0 0 0 2px rgba(30, 74, 111, 0.3);
+        }
+
+        .input-wrapper input[type="password"] {
+            padding-right: 2.5rem;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background: var(--medium-blue);
+            color: white;
+            border: 1px solid var(--light-blue);
+        }
+
+        .btn:hover {
+            background: var(--light-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(30, 74, 111, 0.4);
+        }
+
+        .btn-accounts {
+            background: transparent;
+            border: 1px solid var(--light-blue);
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-accounts:hover {
+            background: var(--medium-blue);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(30, 74, 111, 0.3);
+        }
+
+        .footer .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .footer .social-links a {
+            color: var(--gray);
+            font-size: 1.2rem;
+            transition: color 0.3s;
+        }
+
+        .footer .social-links a:hover {
+            color: var(--light-blue);
+        }
+
+        .footer p {
+            color: var(--gray);
+            font-size: 0.8rem;
+        }
+
+        /* Modais */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--dark-blue);
+            border-radius: 24px;
+            width: 100%;
+            max-width: 600px;
+            border: 1px solid var(--light-blue);
+            box-shadow: 0 20px 60px rgba(0,20,40,0.6);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--medium-blue);
+        }
+
+        .modal-header h2 {
+            color: var(--white);
+            font-size: 1.5rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--gray);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close-btn:hover {
+            color: var(--white);
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .select-all {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: rgba(30, 74, 111, 0.2);
+            border-radius: 12px;
+        }
+
+        .select-all label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        .redacao-items {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+            border: 1px solid var(--medium-blue);
+            border-radius: 12px;
+            padding: 0.5rem;
+        }
+
+        .redacao-item {
+            margin-bottom: 0.5rem;
+            padding: 0.75rem;
+            border: 1px solid var(--medium-blue);
+            border-radius: 8px;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .redacao-item label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .redacao-item input[type="checkbox"] {
+            accent-color: var(--light-blue);
+            width: 18px;
+            height: 18px;
+        }
+
+        .time-settings {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: rgba(30, 74, 111, 0.2);
+            border-radius: 12px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .time-input {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .time-input label {
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+
+        .time-input input {
+            padding: 0.5rem;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid var(--medium-blue);
+            border-radius: 6px;
+            color: var(--white);
+        }
+
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .notification {
+            padding: 1rem;
+            border-radius: 12px;
+            color: white;
+            background: var(--medium-blue);
+            border-left: 4px solid var(--light-blue);
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+            max-width: 350px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            background: #2d1a1a;
+            border-left-color: var(--error-red);
+        }
+
+        .notification.success {
+            background: #0a2f1f;
+            border-left-color: var(--success-green);
+        }
+
+        .loading-modal {
+            display: none;
+            position: fixed;
+            z-index: 1500;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-modal.show {
+            display: flex;
+        }
+
+        .loading-content {
+            background: var(--dark-blue);
+            padding: 2rem;
+            border-radius: 24px;
+            text-align: center;
+            border: 1px solid var(--light-blue);
+            min-width: 300px;
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top: 4px solid var(--light-blue);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .loading-content p {
+            color: var(--gray);
+            margin-top: 0.5rem;
+        }
+
+        @media (max-width: 480px) {
+            .login-card { padding: 1.5rem; }
+            .logo h1 { font-size: 1.8rem; }
+            .time-settings { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="login-card">
+            <div class="logo">
+                <h1>Network Redação</h1>
+                <p>Automação inteligente com IA</p>
+            </div>
+
+            <button class="btn btn-accounts" id="btnShowAccounts">
+                <i class="fas fa-users"></i> Contas Salvas
+            </button>
+
+            <div class="input-group">
+                <label for="username">Usuário (RA):</label>
+                <div class="input-wrapper">
+                    <input type="text" id="username" placeholder="Ex. 123456789xsp" required>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="password">Senha:</label>
+                <div class="input-wrapper">
+                    <input type="password" id="password" placeholder="Sua senha" required>
+                    <button type="button" class="password-toggle"><i class="fas fa-eye"></i></button>
+                </div>
+            </div>
+
+            <button class="btn" id="btnPending">
+                <i class="fas fa-clock"></i> Redações Pendentes
+            </button>
+
+            <div class="footer">
+                <div class="social-links">
+                    <a href="https://discord.gg/4gTtJ9BJe" target="_blank"><i class="fab fa-discord"></i></a>
+                    <a href="#"><i class="fas fa-heart"></i></a>
+                </div>
+                <p>feito por bakai • todos os direitos reservados</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de contas salvas -->
+    <div id="accountsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Contas Salvas</h2>
+                <button class="close-btn" id="closeAccountsModal">&times;</button>
+            </div>
+            <div class="modal-body" id="accountListContainer"></div>
+        </div>
+    </div>
+
+    <!-- Modal de seleção de redações -->
+    <div id="redacaoSelectionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="redacaoSelectionModalTitle">Redações Pendentes</h2>
+                <button class="close-btn" id="closeRedacaoModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="select-all">
+                    <label>
+                        <input type="checkbox" id="selectAllRedacoesCheckbox"> Selecionar todas
+                    </label>
+                </div>
+                <div id="redacaoListContainer" class="redacao-items"></div>
+
+                <div class="time-settings">
+                    <div class="time-input">
+                        <label for="minTime">Tempo mínimo (min):</label>
+                        <input type="number" id="minTime" min="1" max="60" value="3">
+                    </div>
+                    <div class="time-input">
+                        <label for="maxTime">Tempo máximo (min):</label>
+                        <input type="number" id="maxTime" min="1" max="120" value="7">
+                    </div>
+                </div>
+
+                <button class="btn" id="startSelectedRedacoesDraftBtn">
+                    <i class="fas fa-edit"></i> Salvar como Rascunho
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading modals -->
+    <div id="loadingModalCriando" class="loading-modal">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h3 id="loadingTitle">Criando redação com IA</h3>
+            <p id="loadingMessage">Aguarde... gerando texto humanizado.</p>
+        </div>
+    </div>
+    <div id="loadingModalEnviando" class="loading-modal">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h3>Salvando rascunho</h3>
+            <p>Enviando para a plataforma...</p>
+        </div>
+    </div>
+
+    <div id="notification-container" class="notification-container"></div>
+
+    <script>
+        // ==================== CONFIGURAÇÕES ====================
+        const API_BASE_URL = ''; // relativo ao mesmo domínio
+
+        // Elementos DOM
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const btnPending = document.getElementById('btnPending');
+        const btnShowAccounts = document.getElementById('btnShowAccounts');
+        const accountsModal = document.getElementById('accountsModal');
+        const closeAccountsModal = document.getElementById('closeAccountsModal');
+        const redacaoSelectionModal = document.getElementById('redacaoSelectionModal');
+        const closeRedacaoModal = document.getElementById('closeRedacaoModal');
+        const selectAllCheckbox = document.getElementById('selectAllRedacoesCheckbox');
+        const startDraftBtn = document.getElementById('startSelectedRedacoesDraftBtn');
+        const redacaoListContainer = document.getElementById('redacaoListContainer');
+        const notificationContainer = document.getElementById('notification-container');
+        const loadingCriando = document.getElementById('loadingModalCriando');
+        const loadingEnviando = document.getElementById('loadingModalEnviando');
+        const loadingTitle = document.getElementById('loadingTitle');
+        const loadingMessage = document.getElementById('loadingMessage');
+        const minTimeInput = document.getElementById('minTime');
+        const maxTimeInput = document.getElementById('maxTime');
+
+        let currentRedacoes = [];
+        let trava = false;
+
+        // ==================== UTILITÁRIOS ====================
+        function showNotification(title, message, type = 'info') {
+            const icons = { info: 'fa-info-circle', success: 'fa-check-circle', error: 'fa-exclamation-circle' };
+            const iconClass = icons[type] || 'fa-info-circle';
+            const notif = document.createElement('div');
+            notif.className = `notification ${type}`;
+            notif.innerHTML = `<i class="fas ${iconClass}"></i><div><strong>${title}</strong><br>${message}</div>`;
+            notificationContainer.appendChild(notif);
+            setTimeout(() => notif.classList.add('show'), 10);
+            setTimeout(() => {
+                notif.classList.remove('show');
+                setTimeout(() => notif.remove(), 300);
+            }, 5000);
+        }
+
+        // Mostrar/ocultar senha
+        document.querySelector('.password-toggle').addEventListener('click', () => {
+            const type = passwordInput.type === 'password' ? 'text' : 'password';
+            passwordInput.type = type;
+            document.querySelector('.password-toggle i').classList.toggle('fa-eye-slash');
+        });
+
+        // ==================== CONTAS SALVAS ====================
+        function getSavedAccounts() {
+            return JSON.parse(localStorage.getItem('network_redacao_accounts') || '{}');
+        }
+
+        function saveAccount(ra, password, token, nick) {
+            const acc = getSavedAccounts();
+            acc[ra] = { password, token, nick, savedAt: new Date().toISOString() };
+            localStorage.setItem('network_redacao_accounts', JSON.stringify(acc));
+        }
+
+        function deleteAccount(ra) {
+            const acc = getSavedAccounts();
+            delete acc[ra];
+            localStorage.setItem('network_redacao_accounts', JSON.stringify(acc));
+        }
+
+        btnShowAccounts.addEventListener('click', () => {
+            const accounts = getSavedAccounts();
+            const container = document.getElementById('accountListContainer');
+            container.innerHTML = '';
+
+            if (Object.keys(accounts).length === 0) {
+                container.innerHTML = '<p style="color: var(--gray); text-align: center;">Nenhuma conta salva.</p>';
+            } else {
+                for (const [ra, data] of Object.entries(accounts)) {
+                    const div = document.createElement('div');
+                    div.style.display = 'flex';
+                    div.style.justifyContent = 'space-between';
+                    div.style.alignItems = 'center';
+                    div.style.padding = '0.5rem';
+                    div.style.borderBottom = '1px solid var(--medium-blue)';
+                    div.innerHTML = `
+                        <span>${ra}</span>
+                        <div>
+                            <button class="btn-use" data-ra="${ra}" style="background: var(--light-blue); border: none; color: white; padding: 0.2rem 0.8rem; border-radius: 4px; cursor: pointer; margin-right: 0.5rem;">Usar</button>
+                            <button class="btn-delete" data-ra="${ra}" style="background: #8b1e1e; border: none; color: white; padding: 0.2rem 0.8rem; border-radius: 4px; cursor: pointer;">Excluir</button>
+                        </div>
+                    `;
+                    container.appendChild(div);
+                }
+
+                container.querySelectorAll('.btn-use').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const ra = e.target.dataset.ra;
+                        const acc = accounts[ra];
+                        usernameInput.value = ra;
+                        passwordInput.value = acc.password;
+                        accountsModal.classList.remove('show');
+                    });
+                });
+
+                container.querySelectorAll('.btn-delete').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const ra = e.target.dataset.ra;
+                        deleteAccount(ra);
+                        showNotification('Conta removida', ra, 'info');
+                        btnShowAccounts.click();
+                    });
+                });
+            }
+            accountsModal.classList.add('show');
+        });
+
+        closeAccountsModal.addEventListener('click', () => accountsModal.classList.remove('show'));
+        window.addEventListener('click', (e) => {
+            if (e.target === accountsModal) accountsModal.classList.remove('show');
+            if (e.target === redacaoSelectionModal) redacaoSelectionModal.classList.remove('show');
+        });
+
+        // ==================== BUSCAR REDAÇÕES ====================
+        btnPending.addEventListener('click', async () => {
+            if (trava) return showNotification('Aguarde', 'Operação em andamento', 'info');
+
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+            if (!username) return showNotification('Erro', 'Preencha o usuário', 'error');
+
+            trava = true;
+            btnPending.disabled = true;
+            showNotification('Processando', 'Buscando redações...', 'info');
+
+            try {
+                const accounts = getSavedAccounts();
+                const saved = accounts[username];
+                let token = saved?.token;
+                let nick = saved?.nick;
+
+                if (!token) {
+                    if (!password) {
+                        showNotification('Senha necessária', 'Insira a senha ou use conta salva', 'error');
+                        return;
+                    }
+
+                    const loginRes = await fetch('/registration/edusp', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ realm: 'edusp', platform: 'webclient', id: username, password })
+                    });
+
+                    const loginData = await loginRes.json();
+
+                    if (!loginRes.ok) {
+                        let errorMsg = loginData.error || loginData.message || `Erro ${loginRes.status}`;
+                        if (loginRes.status === 401) errorMsg = 'Usuário ou senha inválidos';
+                        throw { status: loginRes.status, message: errorMsg };
+                    }
+
+                    if (!loginData.auth_token) throw new Error('Falha no login: token não recebido');
+
+                    token = loginData.auth_token;
+                    nick = loginData.nick;
+                    saveAccount(username, password, token, nick);
+                    showNotification('Login OK', 'Autenticado com sucesso', 'success');
+                }
+
+                // Buscar salas
+                const roomsRes = await fetch('/room/user?list_all=true&with_cards=true', {
+                    headers: { 'x-api-key': token }
+                });
+
+                if (!roomsRes.ok) {
+                    const errorData = await roomsRes.json().catch(() => ({}));
+                    throw { status: roomsRes.status, message: errorData.error || 'Erro ao buscar salas' };
+                }
+
+                const roomsData = await roomsRes.json();
+                let rooms = [];
+                if (roomsData.rooms && Array.isArray(roomsData.rooms)) {
+                    rooms = roomsData.rooms;
+                } else if (Array.isArray(roomsData)) {
+                    rooms = roomsData;
+                } else {
+                    console.error('Formato inesperado de rooms:', roomsData);
+                    showNotification('Erro', 'Formato de resposta inesperado', 'error');
+                    return;
+                }
+
+                if (rooms.length === 0) {
+                    showNotification('Aviso', 'Nenhuma sala encontrada', 'warning');
+                    return;
+                }
+
+                // Extrair nick da conta salva
+                const account = getSavedAccounts()[username];
+                const userNick = account?.nick || '';
+
+                // Construir targets (nome da sala e nome:sala com nick)
+                const targetsSet = new Set();
+                rooms.forEach(room => {
+                    const roomName = room.name || room.nome || room.id;
+                    if (roomName) {
+                        targetsSet.add(roomName);
+                        if (userNick) {
+                            targetsSet.add(`${roomName}:${userNick}`);
+                        }
+                    }
+                });
+
+                const targets = Array.from(targetsSet);
+                console.log('Targets:', targets);
+
+                // Montar parâmetros para buscar redações
+                const params = new URLSearchParams({
+                    limit: 100,
+                    offset: 0,
+                    is_exam: false,
+                    with_answer: true,
+                    is_essay: true,
+                    with_apply_moment: true,
+                    expired_only: false,
+                    filter_expired: true
+                });
+                targets.forEach(t => params.append('publication_target', t));
+                params.append('answer_statuses', 'pending');
+                params.append('answer_statuses', 'draft');
+
+                const todoRes = await fetch(`/tms/task/todo?${params.toString()}`, {
+                    headers: { 'x-api-key': token }
+                });
+
+                if (!todoRes.ok) {
+                    const errorData = await todoRes.json().catch(() => ({}));
+                    throw { status: todoRes.status, message: errorData.message || 'Erro ao buscar redações' };
+                }
+
+                let redacoes = await todoRes.json();
+                if (!Array.isArray(redacoes)) redacoes = [];
+
+                if (redacoes.length === 0) {
+                    showNotification('Nenhuma redação', 'Nenhuma redação pendente ou rascunho encontrado.', 'info');
+                    return;
+                }
+
+                currentRedacoes = redacoes.map(r => ({ ...r, token, room: r.publication_target }));
+                displayRedacoes(currentRedacoes);
+                redacaoSelectionModal.classList.add('show');
+                showNotification('Sucesso', `${redacoes.length} redação(ões) encontrada(s)`, 'success');
+
+            } catch (error) {
+                console.error('Erro:', error);
+                let errorMessage = error.message || 'Erro desconhecido';
+                let errorTitle = 'Erro';
+                if (error.status === 401) {
+                    errorTitle = 'Sessão expirada';
+                    errorMessage = 'Token inválido. Faça login novamente.';
+                    const username = usernameInput.value.trim();
+                    if (username) {
+                        const accounts = getSavedAccounts();
+                        if (accounts[username]) {
+                            delete accounts[username].token;
+                            localStorage.setItem('network_redacao_accounts', JSON.stringify(accounts));
+                        }
+                    }
+                }
+                showNotification(errorTitle, errorMessage, 'error');
+            } finally {
+                trava = false;
+                setTimeout(() => btnPending.disabled = false, 2000);
+            }
+        });
+
+        function displayRedacoes(redacoes) {
+            redacaoListContainer.innerHTML = '';
+            redacoes.forEach(r => {
+                const div = document.createElement('div');
+                div.className = 'redacao-item';
+                div.innerHTML = `
+                    <label>
+                        <input type="checkbox" value="${r.id}" class="redacao-checkbox">
+                        <span>${r.title} ${r.answer_status === 'draft' ? '(Rascunho)' : ''}</span>
+                    </label>
+                `;
+                redacaoListContainer.appendChild(div);
+            });
+
+            selectAllCheckbox.onchange = (e) => {
+                const checkboxes = document.querySelectorAll('.redacao-checkbox');
+                checkboxes.forEach(cb => cb.checked = e.target.checked);
+            };
+        }
+
+        // ==================== PROCESSAR REDAÇÕES SELECIONADAS ====================
+        startDraftBtn.addEventListener('click', async () => {
+            const checkboxes = document.querySelectorAll('.redacao-checkbox:checked');
+            if (checkboxes.length === 0) {
+                return showNotification('Selecione', 'Escolha pelo menos uma redação', 'info');
+            }
+
+            const minTime = parseInt(minTimeInput.value);
+            const maxTime = parseInt(maxTimeInput.value);
+            if (isNaN(minTime) || minTime < 1) return showNotification('Erro', 'Tempo mínimo inválido', 'error');
+            if (isNaN(maxTime) || maxTime < minTime) return showNotification('Erro', 'Tempo máximo deve ser maior ou igual ao mínimo', 'error');
+
+            const selectedIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+            const selectedRedacoes = currentRedacoes.filter(r => selectedIds.includes(r.id));
+
+            redacaoSelectionModal.classList.remove('show');
+
+            for (const red of selectedRedacoes) {
+                try {
+                    showLoading('Criando redação', 'Buscando detalhes da tarefa...');
+
+                    const applyRes = await fetch(`/tms/task/${red.id}/apply?preview_mode=false&token_code=null&room_name=${encodeURIComponent(red.room)}`, {
+                        headers: { 'x-api-key': red.token }
+                    });
+
+                    if (!applyRes.ok) {
+                        const errorData = await applyRes.json().catch(() => ({}));
+                        throw { status: applyRes.status, message: errorData.error || 'Erro ao buscar detalhes' };
+                    }
+
+                    const applyData = await applyRes.json();
+                    const question = applyData.questions[0];
+
+                    const enunciado = question.statement.replace(/<[^>]+>/g, '').trim();
+                    let prompt = `ENUNCIADO: ${enunciado}\n\n`;
+                    if (question.options?.support_text) {
+                        const support = question.options.support_text;
+                        const sections = support.split(/<strong>.*?<\/strong>/g);
+                        sections.forEach((s, idx) => {
+                            const clean = s.replace(/<[^>]+>/g, '').trim();
+                            if (clean) prompt += `TEXTO ${idx + 1}: ${clean}\n\n`;
+                        });
+                    }
+
+                    showLoading('Gerando redação', 'Utilizando IA para criar o texto...');
+
+                    const genRes = await fetch('/generate_essay', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ genre: question.options.genre.statement, prompt, min_time: minTime, max_time: maxTime })
+                    });
+
+                    const genData = await genRes.json();
+                    if (!genRes.ok || !genData.success) throw new Error(genData.message || 'Falha na geração');
+
+                    const textoGerado = genData.response;
+                    const tituloMatch = textoGerado.match(/TITULO:\s*(.+?)(?=\n\n|TEXTO:|$)/i);
+                    const textoMatch = textoGerado.match(/TEXTO:\s*(.+)$/is);
+                    const titulo = tituloMatch ? tituloMatch[1].trim() : 'Título gerado';
+                    const texto = textoMatch ? textoMatch[1].trim() : textoGerado;
+
+                    showLoading('Salvando rascunho', 'Enviando para a plataforma...', true);
+
+                    const completeRes = await fetch('/complete', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            question_id: question.id,
+                            auth_token: red.token,
+                            room_for_apply: red.room,
+                            task_id: red.id,
+                            titulo,
+                            texto,
+                            answer_id: red.answer_id || null
+                        })
+                    });
+
+                    const completeData = await completeRes.json();
+                    hideLoading();
+
+                    if (completeData.success) {
+                        showNotification('Sucesso', `Redação "${red.title}" salva como rascunho`, 'success');
+                    } else {
+                        throw new Error('Erro ao salvar');
+                    }
+
+                } catch (error) {
+                    console.error('Erro no processamento:', error);
+                    let errorMessage = error.message || 'Erro desconhecido';
+                    showNotification('Erro', `Falha em ${red.title}: ${errorMessage}`, 'error');
+                    hideLoading();
+                }
+            }
+            hideLoading();
+        });
+
+        closeRedacaoModal.addEventListener('click', () => redacaoSelectionModal.classList.remove('show'));
+
+        function showLoading(title, message, switchToEnviando = false) {
+            if (switchToEnviando) {
+                loadingCriando.classList.remove('show');
+                loadingEnviando.classList.add('show');
+            } else {
+                loadingTitle.textContent = title;
+                loadingMessage.textContent = message;
+                loadingCriando.classList.add('show');
+                loadingEnviando.classList.remove('show');
+            }
+        }
+
+        function hideLoading() {
+            loadingCriando.classList.remove('show');
+            loadingEnviando.classList.remove('show');
+        }
+    </script>
+</body>
+</html>
